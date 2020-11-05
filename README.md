@@ -81,7 +81,7 @@ If you use a channel to track toolbelt:
 
 ```
 $ nix-channel --update toolbelt
-$ nix-env --update toolbelt
+$ nix-env --upgrade -A toolbelt --always
 ```
 
 If you do not use a channel:
