@@ -102,3 +102,30 @@ $ home-manager switch
 If you do not use a channel:
 
 It will automatically be updated whenever you run `home-manager switch`,
+
+# Usage
+
+## Available commands
+
+`toolbelt` is a convenience command to inspect the collection of installed scripts, use `--help` to see what it can do.
+
+## Authoring scripts
+Put a file with a proper shebang inside the scripts folder. Note that you can use
+[nix-shell shebangs](https://nixos.org/manual/nix/unstable/command-ref/nix-shell.html#use-as-a--interpreter)
+to write scripts in python
+for example: 
+```python
+#! /usr/bin/env nix-shell
+#! nix-shell -i python -p python pythonPackages.prettytable
+
+import prettytable
+
+# Print a simple table.
+t = prettytable.PrettyTable(["N", "N^2"])
+for n in range(1, 10): t.add_row([n, n * n])
+print t
+```
+
+### Generating man pages
+
+Just drop a .md file next to the script with the same name and it will be generated.

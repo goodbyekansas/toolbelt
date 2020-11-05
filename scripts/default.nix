@@ -1,6 +1,7 @@
 { pkgs ? import <nixpkgs> { } }:
 pkgs.stdenv.mkDerivation rec {
   name = "scripts";
+  nativeBuildInputs = [ pkgs.pandoc pkgs.installShellFiles ];
   src = (builtins.path {
     path = ./.;
     inherit name;
@@ -13,7 +14,11 @@ pkgs.stdenv.mkDerivation rec {
     source $stdenv/setup
     mkdir -p $out/bin
 
-    for f in $src/*; do
+    shopt -s extglob
+    shopt -s globstar
+    shopt -s nullglob
+
+    for f in $src/**/*.!(md); do
         filename=$(basename -- "$f")
         filename="''${filename%.*}"
 
@@ -21,6 +26,13 @@ pkgs.stdenv.mkDerivation rec {
         cp $f $filePath
         chmod +x $filePath
         patchShebangs $filePath
+
+        if [ -f "$src/$filename.md" ]; then
+          pandoc -s -t man "$src/$filename.md" -o "$filename.1"
+          echo "Built man page for $filename"
+          installManPage "$filename.1"
+        fi
     done
+    compressManPages $out
   '';
 }
