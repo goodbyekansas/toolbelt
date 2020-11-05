@@ -3,7 +3,7 @@
 # shellcheck shell=bash
 
 if [ "$1" == "--list" ]; then
-    for f in "$(dirname "$0")"/*; do
+    for f in "$(dirname $(readlink -f "$0"))"/*; do
         basename "$f"
     done
 elif [ "$1" == "--source" ]; then
