@@ -4,4 +4,4 @@
 shopt -s extglob
 shopt -s globstar
 
-shellcheck ./scripts/**/*.!(nix)
+shellcheck ./scripts/**/*.!(nix|md)
