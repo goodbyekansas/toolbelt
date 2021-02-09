@@ -36,4 +36,5 @@ for b in $branches; do
     git branch --list "$b"
     b="${b//\'/}"
     git branch -D "$b"
+    echo ""
 done
