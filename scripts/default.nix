@@ -1,6 +1,7 @@
-{ pkgs ? import <nixpkgs> { } }:
-pkgs.stdenv.mkDerivation rec {
+{ pkgs, components }:
+pkgs.stdenv.mkDerivation (components // rec {
   name = "scripts";
+
   nativeBuildInputs = [ pkgs.pandoc pkgs.installShellFiles ];
   src = (builtins.path {
     path = ./.;
@@ -23,7 +24,7 @@ pkgs.stdenv.mkDerivation rec {
         filename="''${filename%.*}"
 
         filePath=$out/bin/$filename
-        cp $f $filePath
+        substituteAll $f $filePath
         chmod +x $filePath
         patchShebangs $filePath
 
@@ -35,4 +36,4 @@ pkgs.stdenv.mkDerivation rec {
     done
     compressManPages $out
   '';
-}
+})

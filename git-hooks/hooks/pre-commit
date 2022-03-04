@@ -1,0 +1,57 @@
+#! /usr/bin/env bash
+
+if [ ! -z $GIT_SKIP_SIZE_CHECK ]; then
+    exit 0
+fi
+
+limit_mb=${GIT_FILE_SIZE_LIMIT:-5}
+limit_bytes=$(($limit_mb * 1048576))
+
+# Puts you at root of git repository
+pushd "$(git rev-parse --show-toplevel)" > /dev/null
+
+if git rev-parse --verify HEAD > /dev/null 2>&1; then
+    against=HEAD
+else
+    against="$( git hash-object -t tree /dev/null )"
+fi
+
+bad_file_sizes=()
+bad_files=()
+
+IFS='
+'
+
+for file in $( git diff-index --cached --name-only $against ); do
+    file_size=$(([ ! -f $file ] && echo 0) || (wc -c $file | awk '{ print $1 }'))
+    if [ "$file_size" -gt  "$limit_bytes" ]; then
+        bad_files+=($file)
+        mb_size=$(($file_size / 1048576))
+        bad_file_sizes+=($mb_size)
+    fi
+done
+
+if [ ! -z $bad_files ]; then
+    echo -e "💂 Stop right there \e[32;31mcriminal scum\e[0m! Nobody \e[32;4;31mbreaks the law\e[0m on my watch!"
+    echo ""
+    echo -e "   You tried to commit files that were over the git file size limit \e[32;32m($limit_mb MB)\e[0m."
+    echo -e "   \e[32;91mOffending files:\e[0m "
+
+    i=0
+    for file in "${bad_files[@]}"; do
+        echo "      $file (${bad_file_sizes[$i]} MB)"
+        i=$((i + 1))
+    done
+
+    echo ""
+    echo "   Ask yourself if it really makes sense to commit these large files."
+    echo ""
+    echo -e "   \e[32;1mSolutions:\e[0m"
+    echo "      - Remove the files. Don't commit them."
+    echo -e "      - Change the git file size limit by setting the \e[32;36mGIT_FILE_SIZE_LIMIT\e[0m environment variable."
+    echo "        It takes a number that represents the size limit in megabyte."
+    echo -e "      - Set \e[32;36mGIT_SKIP_SIZE_CHECK\e[0m environment variable to anything to make an exception for this case."
+    
+fi
+
+popd > /dev/null 2>&1
